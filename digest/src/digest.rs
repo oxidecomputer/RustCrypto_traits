@@ -52,39 +52,48 @@ pub trait Digest {
 impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
     type OutputSize = <Self as FixedOutput>::OutputSize;
 
+    #[inline]
     fn new() -> Self {
         Self::default()
     }
 
+    #[inline]
     fn update(&mut self, data: impl AsRef<[u8]>) {
-        Update::update(self, data);
+        Update::update(self, data.as_ref());
     }
 
-    fn chain(self, data: impl AsRef<[u8]>) -> Self
+    #[inline]
+    fn chain(mut self, data: impl AsRef<[u8]>) -> Self
     where
         Self: Sized,
     {
-        Update::chain(self, data)
+        Update::update(&mut self, data.as_ref());
+        self
     }
 
+    #[inline]
     fn finalize(self) -> Output<Self> {
         self.finalize_fixed()
     }
 
+    #[inline]
     fn finalize_reset(&mut self) -> Output<Self> {
         let res = self.clone().finalize_fixed();
         self.reset();
         res
     }
 
+    #[inline]
     fn reset(&mut self) {
-        <Self as Reset>::reset(self)
+        Reset::reset(self)
     }
 
+    #[inline]
     fn output_size() -> usize {
         Self::OutputSize::to_usize()
     }
 
+    #[inline]
     fn digest(data: &[u8]) -> Output<Self> {
         let mut hasher = Self::default();
         Update::update(&mut hasher, data);

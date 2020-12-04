@@ -35,9 +35,7 @@ impl<D: Update + FixedOutput + Reset + Clone + 'static> DynDigest for D {
     }
 
     fn finalize_reset(&mut self) -> Box<[u8]> {
-        let res = self.finalize_fixed_reset().to_vec().into_boxed_slice();
-        Reset::reset(self);
-        res
+        self.finalize_fixed_reset().to_vec().into_boxed_slice()
     }
 
     fn finalize(self: Box<Self>) -> Box<[u8]> {
