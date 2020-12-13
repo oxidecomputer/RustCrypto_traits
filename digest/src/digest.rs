@@ -101,5 +101,5 @@ impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
     }
 }
 
-/// Output of a [`Digest`] function
+/// Fixed of fixed-sized hash-function used by [`Digest`] methods.
 pub type Output<D> = GenericArray<u8, <D as Digest>::OutputSize>;

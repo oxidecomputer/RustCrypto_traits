@@ -7,7 +7,7 @@
 //!
 //! - **High-level convenience traits**: [`Digest`], [`DynDigest`]. They are wrappers
 //!   around lower-level traits for most common hash-function use-cases.
-//! - **Mid-level traits**: [`Update`], [`Reset`], [`FixedOutput`], [`ExtendableOutput`].
+//! - **Mid-level traits**: [`Update`], [`FixedOutput`], [`ExtendableOutput`], [`Reset`].
 //!   These traits atomically describe available functionality of hash function
 //!   implementations.
 //! - **Low-level traits**: [`UpdateCore`], [`FixedOutputCore`],
@@ -18,8 +18,9 @@
 //!   application-level code.
 //!
 //! Additionally hash functions implement traits from the standard library:
-//! `Default`, `Clone`, `Write`. The latter is feature-gated behind `std` feature,
-//! which is usually enabled by default by hash implementation crates.
+//! [`Default`], [`Clone`], [`Write`][std::io::Write]. The latter is
+//! feature-gated behind `std` feature, which is usually enabled by default
+//! by hash implementation crates.
 //!
 //! The [`Digest`] trait is the most commonly used trait.
 
@@ -51,6 +52,8 @@ mod core_api;
 mod digest;
 mod dyn_digest;
 
+#[cfg(feature = "core-api")]
+pub use block_buffer;
 #[cfg(feature = "core-api")]
 pub use crate::core_api::{CoreWrapper, ExtendableOutputCore, FixedOutputCore, UpdateCore};
 pub use crate::digest::{Digest, Output};
