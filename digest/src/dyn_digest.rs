@@ -1,8 +1,8 @@
-#![cfg(feature = "alloc")]
 use alloc::boxed::Box;
+use core::fmt;
 
 use super::{FixedOutput, Reset, Update};
-use generic_array::typenum::Unsigned;
+use generic_array::{typenum::Unsigned, GenericArray};
 
 /// The `DynDigest` trait is a modification of `Digest` trait suitable
 /// for trait objects.
@@ -18,6 +18,16 @@ pub trait DynDigest {
 
     /// Retrieve result and consume boxed hasher instance
     fn finalize(self: Box<Self>) -> Box<[u8]>;
+
+    /// Write result into provided array and consume the hasher instance.
+    ///
+    /// Returns error if buffer length is not equal to `output_size`.
+    fn finalize_into(self, buf: &mut [u8]) -> Result<(), InvalidBufferLength>;
+
+    /// Write result into provided array and reset the hasher instance.
+    ///
+    /// Returns error if buffer length is not equal to `output_size`.
+    fn finalize_into_reset(&mut self, out: &mut [u8]) -> Result<(), InvalidBufferLength>;
 
     /// Reset hasher instance to its initial state.
     fn reset(&mut self);
@@ -42,6 +52,24 @@ impl<D: Update + FixedOutput + Reset + Clone + 'static> DynDigest for D {
         self.finalize_fixed().to_vec().into_boxed_slice()
     }
 
+    fn finalize_into(self, buf: &mut [u8]) -> Result<(), InvalidBufferLength> {
+        if buf.len() == self.output_size() {
+            self.finalize_into(GenericArray::from_mut_slice(buf));
+            Ok(())
+        } else {
+            Err(InvalidBufferLength)
+        }
+    }
+
+    fn finalize_into_reset(&mut self, buf: &mut [u8]) -> Result<(), InvalidBufferLength> {
+        if buf.len() == self.output_size() {
+            self.finalize_into_reset(GenericArray::from_mut_slice(buf));
+            Ok(())
+        } else {
+            Err(InvalidBufferLength)
+        }
+    }
+
     fn reset(&mut self) {
         Reset::reset(self);
     }
@@ -60,3 +88,16 @@ impl Clone for Box<dyn DynDigest> {
         self.box_clone()
     }
 }
+
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+#[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
+pub struct InvalidBufferLength;
+
+impl fmt::Display for InvalidBufferLength {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("invalid buffer length")
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for InvalidBufferLength {}

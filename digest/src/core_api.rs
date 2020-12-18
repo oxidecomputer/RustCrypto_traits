@@ -95,7 +95,7 @@ impl<D: FixedOutputCore + Reset> FixedOutput for CoreWrapper<D, D::BlockSize> {
 
     #[inline]
     fn finalize_into(mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
-        let Self { core, buffer} = &mut self;
+        let Self { core, buffer } = &mut self;
         core.finalize_fixed_core(buffer, out);
     }
 
@@ -120,9 +120,12 @@ impl<D: ExtendableOutputCore + Reset> ExtendableOutput for CoreWrapper<D, D::Blo
 
     #[inline]
     fn finalize_xof(mut self) -> Self::Reader {
-        let Self { core, buffer} = &mut self;
+        let Self { core, buffer } = &mut self;
         let reader_core = core.finalize_xof_core(buffer);
-        CoreWrapper { core: reader_core, buffer: Default::default() }
+        CoreWrapper {
+            core: reader_core,
+            buffer: Default::default(),
+        }
     }
 
     #[inline]
@@ -130,7 +133,10 @@ impl<D: ExtendableOutputCore + Reset> ExtendableOutput for CoreWrapper<D, D::Blo
         let Self { core, buffer } = self;
         let reader_core = core.finalize_xof_core(buffer);
         self.reset();
-        CoreWrapper { core: reader_core, buffer: Default::default() }
+        CoreWrapper {
+            core: reader_core,
+            buffer: Default::default(),
+        }
     }
 }
 
@@ -156,4 +162,3 @@ impl<R: XofReaderCore> std::io::Read for CoreWrapper<R, R::BlockSize> {
         Ok(buf.len())
     }
 }
-

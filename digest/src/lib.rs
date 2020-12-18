@@ -50,15 +50,16 @@ pub mod dev;
 #[cfg(feature = "core-api")]
 mod core_api;
 mod digest;
+#[cfg(feature = "alloc")]
 mod dyn_digest;
 
 #[cfg(feature = "core-api")]
-pub use block_buffer;
-#[cfg(feature = "core-api")]
 pub use crate::core_api::{CoreWrapper, ExtendableOutputCore, FixedOutputCore, UpdateCore};
 pub use crate::digest::{Digest, Output};
+#[cfg(feature = "core-api")]
+pub use block_buffer;
 #[cfg(feature = "alloc")]
-pub use dyn_digest::DynDigest;
+pub use dyn_digest::{DynDigest, InvalidBufferLength};
 pub use generic_array::{self, typenum::consts, ArrayLength, GenericArray};
 
 /// Trait for updating hasher state with input data.
