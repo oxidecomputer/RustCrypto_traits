@@ -32,6 +32,12 @@ pub trait Digest {
     /// re-creation.
     fn finalize_reset(&mut self) -> Output<Self>;
 
+    /// Write result into provided array and consume the hasher instance.
+    fn finalize_into(self, out: &mut GenericArray<u8, Self::OutputSize>);
+
+    /// Write result into provided array and reset the hasher instance.
+    fn finalize_into_reset(&mut self, out: &mut GenericArray<u8, Self::OutputSize>);
+
     /// Reset hasher instance to its initial state.
     fn reset(&mut self);
 
@@ -78,9 +84,17 @@ impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
 
     #[inline]
     fn finalize_reset(&mut self) -> Output<Self> {
-        let res = self.clone().finalize_fixed();
-        self.reset();
-        res
+        self.finalize_fixed_reset()
+    }
+
+    #[inline]
+    fn finalize_into(self, out: &mut Output<Self>) {
+        self.finalize_into(out);
+    }
+
+    #[inline]
+    fn finalize_into_reset(&mut self, out: &mut Output<Self>) {
+        self.finalize_into_reset(out);
     }
 
     #[inline]
